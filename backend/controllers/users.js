@@ -6,11 +6,14 @@ const { User } = db
 
 router.post('/', async (req, res) => {
     let{ password, ...rest } = req.body;
+    const password_digest = bcrypt.hashSync(password, 10);
+
     const user = await User.create({
         ...rest,
-        password_digest: bcrypt.hashSync(password, 10)
+        passwordDigest: bcrypt.hashSync(password, 10)
     })
     res.json(user)
+    console.log(user)
 })
 
 
