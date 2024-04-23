@@ -5,16 +5,18 @@ const bcrypt = require("bcrypt");
 const { User } = db;
 
 router.post("/", async (req, res) => {
-  let user = await User.findOne({
-    where: {email: req.body.email}
-
+  let user = await User.findOne({ // find the user by email
+    where: {
+        email: req.body.email
+    }
   });
-  if (!user || !await bcrypt.compare(req.body.password, user.passwordDigest)) {
+
+  if (!user || !await bcrypt.compare(req.body.password, user.passwordDigest)) { // if the user doesn't exist or the password doesn't match
     res.status(401).json({
       error: "Could not authenticate user"
     })
   } else {
-    res.json({user});
+    res.json({ user });
   }
 });
 
