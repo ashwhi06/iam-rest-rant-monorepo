@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from "react";
+// import { get } from "../../../backend/controllers/places";
 
 
 export const CurrentUser = createContext()
@@ -6,23 +7,26 @@ export const CurrentUser = createContext()
 function CurrentUserProvider({ children }){
 
     const [currentUser, setCurrentUser] = useState(null)
-   useEffect(() => {
+    useEffect(() => {
 
-     const getLoggedInUser = async () => {
-       let res = await fetch('http://localhost:5000/authentication/profile', { 
-        credentials: 'include' // This is important!
-    })
-       let user = await res.json()
-       //const data = await res.json()
-       setCurrentUser(user)
-     }
-   })
+      const getLoggedInUser = async () => {
+        let res = await fetch('http://localhost:5000/authentication/profile', { 
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+      })
+        let user = await res.json()
+        setCurrentUser(user)
+      }
+      getLoggedInUser()
+    }, [])
 
-    return (
-        <CurrentUser.Provider value={{ currentUser, setCurrentUser }}>
-            {children}
-        </CurrentUser.Provider>
-    )
+      return (
+          <CurrentUser.Provider value={{ currentUser, setCurrentUser }}>
+              {children}
+          </CurrentUser.Provider>
+      )
 }
 
 export default CurrentUserProvider
