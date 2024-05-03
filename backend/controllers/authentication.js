@@ -8,19 +8,14 @@ const { User } = db;
 // POST /api/auth/register
 router.post("/", async (req, res) => {
   let user = await User.findOne({
-    // find the user by email
-    where: {
-      email: req.body.email,
-    },
+    where: { email: req.body.email },
   });
-
   if (
     !user ||
     !(await bcrypt.compare(req.body.password, user.passwordDigest))
   ) {
-    // if the user doesn't exist or the password doesn't match
     res.status(404).json({
-      error: "Could not authenticate user",
+      message: `Could not find a user with the provided email and password`,
     });
   } else {
     const result = await jwt.encode(process.env.JWT_SECRET, {
@@ -30,26 +25,28 @@ router.post("/", async (req, res) => {
   }
 });
 
-// get the current user's profile
+// get the current user's login profile
 router.get("/profile", async (req, res) => {
-  // console.log(req.session.userId);
-
   try {
-    const [authorizationMethod, token] = req.headers.authorization.split(" ");
+    // Split the authorization header into [ "Bearer", "TOKEN" ]:
+    const [authenticationMethod, token] = req.headers.authorization.split(" ");
 
-    if (authorizationMethod == "Bearer") {
-      // const result = await jwt.decode(token, process.env.JWT_SECRET);
+    if (authenticationMethod == "Bearer") {
+      // Decode the JWT
+      const result = await jwt.decode(process.env.JWT_SECRET, token);
 
-      // const id = result.value;
+      // Get user's login id from the payload
+      const { id } = result.value;
 
+      // Find the user using their id:
       let user = await User.findOne({
         where: {
-          userId: req.session.userId,
+          userId: id,
         },
       });
-      res.json({ user });
+      res.json(user);
     }
-  } catch (err) {
+  } catch {
     res.json(null);
   }
 });
